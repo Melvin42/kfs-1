@@ -77,9 +77,10 @@ terminal_putentryat:
 
 ; IN = al: ASCII char
 terminal_putchar:
-	cmp al, 0xA
-	je new_line
 	mov dx, [terminal_cursor_pos] ; This loads terminal_column at DH, and terminal_row at DL
+
+	cmp al, 0xA
+	je .new_line
 
 	call terminal_putentryat
 
@@ -87,6 +88,7 @@ terminal_putchar:
 	cmp dh, VGA_WIDTH
 	jne .cursor_moved
 
+.new_line:
 	mov dh, 0
 	inc dl
 
@@ -101,11 +103,6 @@ terminal_putchar:
 	mov [terminal_cursor_pos], dx
 
 	ret
-
-new_line:
-	inc dl
-	mov dh, 0
-	jmp terminal_putchar.cursor_moved
 
 ; IN = cx: length of string, ESI: string location
 ; OUT = none
@@ -165,8 +162,22 @@ terminal_write_string:
 ; Note: 
 ; - The string is looped through twice on printing. 
 
-hello_string db "Hello, kernel World!", 0xA, "Salut", 0 ; 0xA = line feed
-
+hello_string db "        ,--,               ", "salut", 0xA, "coucou", 0xA, "youhou", 0xA, "bip", 0xA, "boop", 0
+;"      ,--.'|       ,----,  ", 0xA,\
+;"   ,--,  | :     .'   .' - ", 0xA,\
+;",---.'|  : '   ,----,'    |", 0xA,\
+;";   : |  | ;   |    :  .  ;", 0xA,\
+;"|   | : _' |   ;    |.'  / ", 0xA,\
+;":   : |.'  |   `----'/  ;  ", 0xA,\
+;"|   ' '  ; :     /  ;  /   ", 0xA,\
+;":   :  .'. |    ;  /  /-,  ", 0xA,\
+;" `---`:  | '   /  /  /.`|  ", 0xA,\
+;"      '  ; | ./__;      :  ", 0xA,\
+;"      |  : ; |   :    .'   ", 0xA,\
+;"      '  ,/  ;   | .'      ", 0xA,\
+;"      '--'   `---'         ", 0xA,\
+;"                           ", 0xA, 0
+ 
 
 terminal_color db 0
 
