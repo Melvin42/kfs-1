@@ -77,6 +77,8 @@ terminal_putentryat:
 
 ; IN = al: ASCII char
 terminal_putchar:
+	cmp al, 0xA
+	je new_line
 	mov dx, [terminal_cursor_pos] ; This loads terminal_column at DH, and terminal_row at DL
 
 	call terminal_putentryat
@@ -99,6 +101,11 @@ terminal_putchar:
 	mov [terminal_cursor_pos], dx
 
 	ret
+
+new_line:
+	inc dl
+	mov dh, 0
+	jmp terminal_putchar.cursor_moved
 
 ; IN = cx: length of string, ESI: string location
 ; OUT = none
@@ -158,7 +165,7 @@ terminal_write_string:
 ; Note: 
 ; - The string is looped through twice on printing. 
 
-hello_string db "Hello, kernel World!", 0xA, 0 ; 0xA = line feed
+hello_string db "Hello, kernel World!", 0xA, "Salut", 0 ; 0xA = line feed
 
 
 terminal_color db 0

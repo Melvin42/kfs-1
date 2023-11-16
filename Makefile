@@ -1,3 +1,4 @@
+
 NAME = kfs.bin
 
 ISONAME = kfs.iso
@@ -21,6 +22,12 @@ all : $(NAME) $(ISONAME)
 
 $(NAME) : $(OBJ)
 	ld $(LDFLAGS) $(LDFILE) -o $(NAME) $(OBJ)
+#	grub-file --is-x86-multiboot kfs.bin
+##	ifeq "echo $?" 0
+#		echo -e "\033[0;31m multiboot confirmed\0033[0m"
+#	else
+#		echo the file is not multiboot
+#	enfif
 
 $(ISONAME) : $(NAME)
 	mkdir -p isodir/boot/grub
