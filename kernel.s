@@ -27,26 +27,37 @@ kernel_main:
 	call terminal_set_color
 	mov esi, hello_string
 	call terminal_write_string
-	jmp $
+	;mov esi, hello_string
+	;call terminal_write_string
+	jmp $ ; $ is the address of the current instruction, so jmp $ is looping to to itself
+; This is usually done for a fatal error
 
 
 ; IN = dl: y, dh: x
 ; OUT = dx: Index with offset 0xB8000 at VGA buffer
 ; Other registers preserved
+
 terminal_getidx:
-	push ax; preserve registers
+	push eax; preserve registers
+	push ecx
 
-	shl dh, 1 ; multiply by two because every entry is a word that takes up 2 bytes
+	xor eax, eax
+	xor ecx, ecx
+	mov ecx, edx
 
-	mov al, VGA_WIDTH
-	mul dl
-	mov dl, al
-
-	shl dl, 1 ; same
-	add dl, dh
+	mov dl, dh
 	mov dh, 0
+	shl edx, 1
 
-	pop ax
+	mov eax, VGA_WIDTH
+	mov ch, 0
+	mul ecx
+
+	shl ecx, 1
+	add edx, eax
+
+	pop ecx
+	pop eax
 	ret
 
 ; IN = dl: bg color, dh: fg color
@@ -111,11 +122,13 @@ terminal_write:
 .loopy:
 
 	mov al, [esi]
-	call terminal_putchar
 
-	dec cx
-	cmp cx, 0
+;	dec cx
+	mov al, [esi]
+	cmp al, 0
 	je .done
+
+	call terminal_putchar
 
 	inc esi
 	jmp .loopy
@@ -127,31 +140,31 @@ terminal_write:
 
 ; IN = ESI: zero delimited string location
 ; OUT = ECX: length of string
-terminal_strlen:
-	push eax
-	push esi
-	mov ecx, 0
-.loopy:
-	mov al, [esi]
-	cmp al, 0
-	je .done
-
-	inc esi
-	inc ecx
-
-	jmp .loopy
-
-
-.done:
-	pop esi
-	pop eax
-	ret
+;terminal_strlen:
+;	push eax
+;	push esi
+;	mov ecx, 0 ; ecx = len
+;.loopy:
+;	mov al, [esi]
+;	cmp al, 0
+;	je .done
+;
+;	inc esi
+;	inc ecx
+;
+;	jmp .loopy
+;
+;
+;.done:
+;	pop esi
+;	pop eax
+;	ret
 
 ; IN = ESI: string location
 ; OUT = none
 terminal_write_string:
 	pusha
-	call terminal_strlen
+;	call terminal_strlen
 	call terminal_write
 	popa
 	ret
@@ -162,12 +175,14 @@ terminal_write_string:
 ; Note: 
 ; - The string is looped through twice on printing. 
 
-hello_string db "        ,--,               ", "salut", 0xA, "coucou", 0xA, "youhou", 0xA, "bip", 0xA, "boop", 0
+hello_string db "1", "2", "3", "4", 0xA, "5", 0xA, "6", 0
+;hello_string db "1", 0xA, "2", 0xA, "3", 0xA, "4", 0xA, "5", 0xA, "6", 0
+;"        ,--,               "
 ;"      ,--.'|       ,----,  ", 0xA,\
 ;"   ,--,  | :     .'   .' - ", 0xA,\
 ;",---.'|  : '   ,----,'    |", 0xA,\
 ;";   : |  | ;   |    :  .  ;", 0xA,\
-;"|   | : _' |   ;    |.'  / ", 0xA,\
+;"|   | : _' |   ;    |.'  / ", 0xA,d
 ;":   : |.'  |   `----'/  ;  ", 0xA,\
 ;"|   ' '  ; :     /  ;  /   ", 0xA,\
 ;":   :  .'. |    ;  /  /-,  ", 0xA,\
@@ -177,7 +192,7 @@ hello_string db "        ,--,               ", "salut", 0xA, "coucou", 0xA, "you
 ;"      '  ,/  ;   | .'      ", 0xA,\
 ;"      '--'   `---'         ", 0xA,\
 ;"                           ", 0xA, 0
- 
+
 
 terminal_color db 0
 
